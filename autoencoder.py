@@ -52,3 +52,22 @@ for epoch in range(epochs):
         total_loss += loss.item()
     avg_loss = total_loss / len(train_loader)
     print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.6f}")
+
+model.eval()
+with torch.no_grad():
+    x, _ = next(iter(train_loader))
+    x = x.view(-1, 784).to(device)
+    x_recon = model(x)
+    num_images = 10
+    plt.figure(figsize=(12, 3))
+    for i in range(num_images):
+        # Original Image
+        plt.subplot(2, num_images, i + 1)
+        plt.imshow(x[i].view(28, 28).cpu(), cmap='gray')
+        plt.axis('off')
+        # Reconstructed Image
+        plt.subplot(2, num_images, i + 1 + num_images)
+        plt.imshow(x_recon[i].view(28, 28).cpu(), cmap='gray')
+        plt.axis('off')
+    plt.tight_layout()
+    plt.show()
