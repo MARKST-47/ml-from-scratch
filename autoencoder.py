@@ -33,8 +33,22 @@ class Autoencoder(nn.Module):
         x_recon = self.decoder(z)
         return x_recon
     
-model = Autoencoder()
+model = Autoencoder().to(device)
 criterion = nn.MSELoss()
-optimizer = nn.Adam(model.parameters(), lr=1e-3)
+optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
+epochs = 5
+model.train()
 
+for epoch in range(epochs):
+    total_loss = 0
+    for x, _ in train_loader:
+        x = x.view(-1, 784).to(device)
+        optimizer.zero_grad()
+        x_recon = model(x)
+        loss = criterion(x_recon, x)
+        loss.backward()
+        optimizer.step()
+        total_loss += loss.item()
+    avg_loss = total_loss / len(train_loader)
+    print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.6f}")
