@@ -77,7 +77,7 @@ model.eval()
 with torch.no_grad():
     x, _ = next(iter(train_loader))
     x = x.view(-1, 784).to(device)
-    x_recon = model(x)
+    x_recon, _, _ = model(x)
     num_images = 10
     plt.figure(figsize=(12, 3))
     for i in range(num_images):
