@@ -50,3 +50,14 @@ class VAE(nn.Module):
         x_reconstructed = self.decode(z)
         return x_reconstructed, mu, logvar    
         
+def vae_loss(recon_x, x, mu, logvar):
+    recon_loss = nn.functional.mse_loss(recon_x, x)
+    kl_loss = 0.5 * torch.sum(mu**2 + logvar.exp() - logvar - 1)
+    return recon_loss + kl_loss
+
+model = VAE().to(device)
+optimizer = optim.Adam(model.parameters(), lr = 1e-3)
+
+epochs = 5
+model.train()
+
