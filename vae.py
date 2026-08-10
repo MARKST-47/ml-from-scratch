@@ -91,3 +91,14 @@ with torch.no_grad():
         plt.axis('off')
     plt.tight_layout()
     plt.show()
+    
+with torch.no_grad():
+    z = torch.randn(16, latent_dim).to(device)
+    samples = model.decode(z).cpu()
+    plt.figure(figsize=(6, 6))
+    for i in range(16):
+        plt.subplot(4, 4, i + 1)
+        plt.imshow(samples[i].view(28, 28), cmap='gray')
+        plt.axis('off')
+    plt.show()
+        
