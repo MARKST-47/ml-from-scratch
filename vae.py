@@ -51,7 +51,7 @@ class VAE(nn.Module):
         return x_reconstructed, mu, logvar    
         
 def vae_loss(recon_x, x, mu, logvar):
-    recon_loss = nn.functional.mse_loss(recon_x, x)
+    recon_loss = nn.functional.binary_cross_entropy(recon_x, x, reduction="sum")
     kl_loss = 0.5 * torch.sum(mu**2 + logvar.exp() - logvar - 1)
     return recon_loss + kl_loss
 
@@ -60,4 +60,34 @@ optimizer = optim.Adam(model.parameters(), lr = 1e-3)
 
 epochs = 5
 model.train()
-
+for epoch in range(epochs):
+    total_loss = 0
+    for x, _ in (train_loader):
+        x = x.view(-1, 784).to(device) # (batch, channel, width,, height) to (batch, c*w*h)
+        optimizer.zero_grad()
+        x_recon, mu, logvar = model(x)
+        loss = vae_loss(x_recon, x, mu, logvar)
+        loss.backward()
+        optimizer.step()
+        total_loss += loss.item()
+    avg_loss = total_loss / len(train_loader.dataset)
+    print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.6f}")
+    
+model.eval()
+with torch.no_grad():
+    x, _ = next(iter(train_loader))
+    x = x.view(-1, 784).to(device)
+    x_recon = model(x)
+    num_images = 10
+    plt.figure(figsize=(12, 3))
+    for i in range(num_images):
+        # Original Image
+        plt.subplot(2, num_images, i + 1)
+        plt.imshow(x[i].view(28, 28).cpu(), cmap='gray')
+        plt.axis('off')
+        # Reconstructed Image
+        plt.subplot(2, num_images, i + 1 + num_images)
+        plt.imshow(x_recon[i].view(28, 28).cpu(), cmap='gray')
+        plt.axis('off')
+    plt.tight_layout()
+    plt.show()
